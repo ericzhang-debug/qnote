@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { verifyToken } from '@/lib/auth'
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -14,11 +15,15 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Simply check if token cookie exists — actual JWT validation
-  // is done client-side via /api/auth/me (Node.js runtime)
   const token = request.cookies.get('token')?.value
 
   if (!token) {
+    return NextResponse.redirect(new URL('/admin/login', request.url))
+  }
+
+  const payload = verifyToken(token)
+
+  if (!payload) {
     return NextResponse.redirect(new URL('/admin/login', request.url))
   }
 
