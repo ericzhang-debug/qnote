@@ -13,13 +13,12 @@ export async function PUT(
   const { id } = await params
 
   try {
-    const { username, password, displayName, isAdmin } = await request.json()
+    const { username, password, displayName } = await request.json()
 
-    const data: Record<string, unknown> = {}
+    const data: Record<string, unknown> = { isAdmin: true }
 
     if (username) data.username = username
     if (displayName) data.displayName = displayName
-    if (isAdmin !== undefined) data.isAdmin = isAdmin
     if (password) {
       data.password = await hashPassword(password)
     }

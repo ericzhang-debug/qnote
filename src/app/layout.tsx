@@ -12,10 +12,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "QNote - 微语",
-  description: "记录生活中的每一句微语",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  let siteTitle = "QNote - 微语";
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    const settings = await prisma.setting.findUnique({ where: { id: 1 } });
+    if (settings?.siteTitle) siteTitle = settings.siteTitle;
+  } catch {}
+  return {
+    title: siteTitle,
+    description: "记录生活中的每一句微语",
+  };
+}
 
 export default function RootLayout({
   children,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
@@ -9,6 +9,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [siteName, setSiteName] = useState('QNote')
+
+  useEffect(() => {
+    fetch('/api/public/settings')
+      .then(res => res.json())
+      .then(data => { if (data.siteName) setSiteName(data.siteName) })
+      .catch(() => {})
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -43,7 +51,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">✦ QNote</h1>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{siteName}</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">管理后台</p>
         </div>
 

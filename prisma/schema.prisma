@@ -29,6 +29,18 @@ model Qnote {
   updatedAt DateTime @updatedAt
 }
 
+model Setting {
+  id           Int      @id @default(autoincrement())
+  siteName     String   @default("QNote")
+  siteTitle    String   @default("QNote - 微语")
+  siteSubtitle String   @default("记录生活中的每一句微语")
+  showIcp      Boolean  @default(false)
+  icpNumber    String   @default("")
+  showGithub   Boolean  @default(false)
+  githubUrl    String   @default("")
+  updatedAt    DateTime @updatedAt
+}
+
 model ApiKey {
   id        Int      @id @default(autoincrement())
   name      String

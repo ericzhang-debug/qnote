@@ -27,6 +27,19 @@ async function main() {
   console.log(`   密码: admin123`)
   console.log(`   显示名称: ${admin.displayName}`)
   console.log(`   管理员: ${admin.isAdmin}`)
+
+  await prisma.setting.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      siteName: 'QNote',
+      siteTitle: 'QNote - 微语',
+      siteSubtitle: '记录生活中的每一句微语',
+    },
+  })
+
+  console.log('✅ 默认系统配置已创建')
 }
 
 main()

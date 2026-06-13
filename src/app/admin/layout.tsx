@@ -9,7 +9,8 @@ import {
   Key,
   LogOut,
   Menu,
-  X,
+  FileText,
+  Settings,
 } from 'lucide-react'
 
 export default function AdminLayout({
@@ -22,6 +23,14 @@ export default function AdminLayout({
   const [user, setUser] = useState<{ displayName: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [siteName, setSiteName] = useState('QNote')
+
+  useEffect(() => {
+    fetch('/api/public/settings')
+      .then(res => res.json())
+      .then(data => { if (data.siteName) setSiteName(data.siteName) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const token = document.cookie.split('token=')[1]?.split(';')[0]
@@ -74,6 +83,8 @@ export default function AdminLayout({
     { href: '/admin', label: '微语管理', icon: MessageSquare },
     { href: '/admin/users', label: '用户管理', icon: Users },
     { href: '/admin/api-keys', label: 'API 密钥', icon: Key },
+    { href: '/admin/api-docs', label: 'API 文档', icon: FileText },
+    { href: '/admin/settings', label: '系统配置', icon: Settings },
   ]
 
   return (
@@ -86,7 +97,7 @@ export default function AdminLayout({
           {/* Logo */}
           <div className="px-5 py-5 border-b border-slate-200 dark:border-slate-700">
             <Link href="/admin" className="text-lg font-bold text-slate-800 dark:text-slate-100">
-              ✦ QNote 管理
+              {siteName}管理
             </Link>
           </div>
 
@@ -149,7 +160,7 @@ export default function AdminLayout({
           >
             <Menu className="w-5 h-5" />
           </button>
-          <span className="font-medium text-sm text-slate-800 dark:text-slate-200">QNote 管理</span>
+          <span className="font-medium text-sm text-slate-800 dark:text-slate-200">{siteName}管理</span>
         </div>
 
         <div className="p-4 md:p-6 lg:p-8">

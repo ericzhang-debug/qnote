@@ -7,7 +7,6 @@ interface User {
   id: number
   username: string
   displayName: string
-  isAdmin: boolean
   createdAt: string
   _count: { qnotes: number; apiKeys: number }
 }
@@ -17,7 +16,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
-  const [form, setForm] = useState({ username: '', password: '', displayName: '', isAdmin: false })
+  const [form, setForm] = useState({ username: '', password: '', displayName: '' })
 
   useEffect(() => {
     fetchUsers()
@@ -41,13 +40,13 @@ export default function UsersPage() {
 
   function openCreate() {
     setEditingUser(null)
-    setForm({ username: '', password: '', displayName: '', isAdmin: false })
+    setForm({ username: '', password: '', displayName: '' })
     setShowModal(true)
   }
 
   function openEdit(user: User) {
     setEditingUser(user)
-    setForm({ username: user.username, password: '', displayName: user.displayName, isAdmin: user.isAdmin })
+    setForm({ username: user.username, password: '', displayName: user.displayName })
     setShowModal(true)
   }
 
@@ -59,7 +58,7 @@ export default function UsersPage() {
       const body: Record<string, unknown> = {
         username: form.username,
         displayName: form.displayName,
-        isAdmin: form.isAdmin,
+        isAdmin: true,
       }
       if (form.password) body.password = form.password
 
@@ -72,7 +71,7 @@ export default function UsersPage() {
       await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, isAdmin: true }),
       })
     }
 
@@ -142,15 +141,7 @@ export default function UsersPage() {
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400"
                 />
               </div>
-              <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                <input
-                  type="checkbox"
-                  checked={form.isAdmin}
-                  onChange={(e) => setForm({ ...form, isAdmin: e.target.checked })}
-                  className="rounded border-slate-300"
-                />
-                管理员
-              </label>
+
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
                   取消
@@ -176,7 +167,6 @@ export default function UsersPage() {
               <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                 <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">用户名</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">显示名称</th>
-                <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">角色</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">微语数</th>
                 <th className="text-left px-4 py-3 font-medium text-slate-600 dark:text-slate-400">API 密钥</th>
                 <th className="text-right px-4 py-3 font-medium text-slate-600 dark:text-slate-400">操作</th>
@@ -187,15 +177,6 @@ export default function UsersPage() {
                 <tr key={user.id} className="border-b border-slate-100 dark:border-slate-700/50 last:border-0">
                   <td className="px-4 py-3 text-slate-800 dark:text-slate-200">{user.username}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{user.displayName}</td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                      user.isAdmin
-                        ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
-                        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
-                    }`}>
-                      {user.isAdmin ? '管理员' : '用户'}
-                    </span>
-                  </td>
                   <td className="px-4 py-3 text-slate-500">{user._count.qnotes}</td>
                   <td className="px-4 py-3 text-slate-500">{user._count.apiKeys}</td>
                   <td className="px-4 py-3 text-right">

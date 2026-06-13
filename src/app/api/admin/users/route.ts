@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   if (error) return error
 
   try {
-    const { username, password, displayName, isAdmin } = await request.json()
+    const { username, password, displayName } = await request.json()
 
     if (!username || !password) {
       return NextResponse.json({ error: '用户名和密码不能为空' }, { status: 400 })
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         username,
         password: hashedPassword,
         displayName: displayName || username,
-        isAdmin: isAdmin ?? false,
+        isAdmin: true,
       },
       select: {
         id: true,
