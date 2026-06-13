@@ -117,7 +117,7 @@ export default async function SharePage({
 
       {/* Footer */}
       <footer className="text-center text-xs text-slate-400 dark:text-slate-600 mt-6 pb-4 space-y-1">
-        <p>来自 {settings.siteName}</p>
+        {/* <p>来自 {settings.siteName}</p> */}
         {settings.showIcp && settings.icpNumber && (
           <p>
             <a

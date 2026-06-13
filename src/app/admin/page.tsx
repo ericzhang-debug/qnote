@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, Trash2, Link as LinkIcon, Copy, Check } from 'lucide-react'
+import { Plus, Trash2, Link as LinkIcon, Copy, Check, Edit2 } from 'lucide-react'
 
 interface Qnote {
   id: number
@@ -18,6 +18,11 @@ export default function AdminDashboard() {
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  // Edit state
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editContent, setEditContent] = useState('')
+  const [savingEdit, setSavingEdit] = useState(false)
 
   useEffect(() => {
     fetchQnotes()
@@ -64,6 +69,40 @@ export default function AdminDashboard() {
       console.error(err)
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  function openEdit(qnote: Qnote) {
+    setEditingId(qnote.id)
+    setEditContent(qnote.content)
+  }
+
+  function closeEdit() {
+    setEditingId(null)
+    setEditContent('')
+  }
+
+  async function saveEdit() {
+    if (!editingId || !editContent.trim()) return
+    setSavingEdit(true)
+    try {
+      const token = document.cookie.split('token=')[1]?.split(';')[0]
+      const res = await fetch(`/api/admin/qnotes/${editingId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: editContent.trim() }),
+      })
+      if (res.ok) {
+        closeEdit()
+        fetchQnotes()
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSavingEdit(false)
     }
   }
 
@@ -154,6 +193,13 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
+                    onClick={() => openEdit(qnote)}
+                    className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    title="编辑"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
                     onClick={() => copyShareLink(qnote.shareId)}
                     className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                     title="复制分享链接"
@@ -184,6 +230,47 @@ export default function AdminDashboard() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Edit modal */}
+      {editingId !== null && (
+        <div
+          className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4"
+          onClick={closeEdit}
+        >
+          <div
+            className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl w-full max-w-lg p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
+              编辑微语
+            </h2>
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="w-full min-h-[120px] p-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm text-slate-700 dark:text-slate-200 resize-none focus:outline-none focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500"
+              maxLength={500}
+            />
+            <div className="flex items-center justify-between mt-3">
+              <span className="text-xs text-slate-400">{editContent.length}/500</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={closeEdit}
+                  className="px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={saveEdit}
+                  disabled={!editContent.trim() || savingEdit}
+                  className="px-4 py-2 text-sm bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300 disabled:opacity-50 transition-colors"
+                >
+                  {savingEdit ? '保存中...' : '保存'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

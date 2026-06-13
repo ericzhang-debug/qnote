@@ -35,10 +35,12 @@ export default function Home() {
   const [pagination, setPagination] = useState<Pagination | null>(null)
   const [loading, setLoading] = useState(true)
   const [settings, setSettings] = useState<SiteSettings | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
     fetchQnotes()
     fetchSettings()
+    setIsLoggedIn(document.cookie.includes('token='))
   }, [])
 
   async function fetchSettings() {
@@ -86,7 +88,7 @@ export default function Home() {
       <header className="relative border-b border-slate-200/60 dark:border-slate-700/30">
         <div className="max-w-2xl mx-auto px-4 py-12 text-center">
           <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
-            {settings?.siteName || 'QNote'}
+            {settings?.siteName || '✦ QNote'}
           </h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             {settings?.siteSubtitle || '记录生活中的每一句微语'}
@@ -108,29 +110,38 @@ export default function Home() {
         ) : (
           <div className="relative">
             {/* Timeline line */}
-            <div className="absolute left-[18px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-slate-200 via-slate-300 to-slate-200 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700" />
+            <div className="absolute left-[100px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-slate-200 via-slate-300 to-slate-200 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700" />
 
             {/* Qnote cards */}
             <div className="space-y-6">
-              {qnotes.map((qnote) => (
-                <div key={qnote.id} className="relative pl-12 group">
-                  {/* Timeline dot */}
-                  <div className="absolute left-[11px] top-2 w-[15px] h-[15px] rounded-full border-2 border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-800 group-hover:border-sky-400 dark:group-hover:border-sky-400 group-hover:bg-sky-50 dark:group-hover:bg-sky-950/30 transition-colors duration-300 z-10" />
+              {qnotes.map((qnote) => {
+                const timeText = formatDate(qnote.createdAt)
+                return (
+                  <div key={qnote.id} className="relative pl-[130px] group">
+                    {/* Time on the left of timeline */}
+                    <div className="absolute left-0 top-[5px] w-[90px] text-right pr-3">
+                      <time className="text-[11px] text-slate-400 dark:text-slate-500 leading-tight block">
+                        {timeText}
+                      </time>
+                    </div>
 
-                  {/* Card */}
-                  <div className="bg-white dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/30 p-5 shadow-sm hover:shadow-md hover:border-slate-300/60 dark:hover:border-slate-600/30 transition-all duration-300">
-                    <p className="text-base leading-relaxed text-slate-700 dark:text-slate-200 whitespace-pre-wrap break-words">
-                      {qnote.content}
-                    </p>
-                    <div className="mt-3 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
-                      <span className="font-medium text-slate-400 dark:text-slate-500">
-                        {qnote.user.displayName}
-                      </span>
-                      <time>{formatDate(qnote.createdAt)}</time>
+                    {/* Timeline dot */}
+                    <div className="absolute left-[93px] top-[6px] w-[15px] h-[15px] rounded-full border-2 border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-800 group-hover:border-sky-400 dark:group-hover:border-sky-400 group-hover:bg-sky-50 dark:group-hover:bg-sky-950/30 transition-colors duration-300 z-10" />
+
+                    {/* Card */}
+                    <div className="bg-white dark:bg-slate-800/80 rounded-xl border border-slate-200/60 dark:border-slate-700/30 p-5 shadow-sm hover:shadow-md hover:border-slate-300/60 dark:hover:border-slate-600/30 transition-all duration-300">
+                      <p className="text-base leading-relaxed text-slate-700 dark:text-slate-200 whitespace-pre-wrap break-words">
+                        {qnote.content}
+                      </p>
+                      <div className="mt-3 text-xs text-slate-400 dark:text-slate-500">
+                        <span className="font-medium text-slate-400 dark:text-slate-500">
+                          {qnote.user.displayName}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
@@ -157,7 +168,15 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-slate-200/60 dark:border-slate-700/30 py-6 text-center text-xs text-slate-400 dark:text-slate-600 space-y-1">
-        <p>{settings?.siteName || 'QNote'} · 微语</p>
+        {/* <p>{settings?.siteName || 'QNote'} · 微语</p> */}
+        <p>
+          <a
+            href={isLoggedIn ? '/admin' : '/admin/login'}
+            className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors"
+          >
+            {isLoggedIn ? '进入管理后台' : '登录管理后台'}
+          </a>
+        </p>
         {settings?.showIcp && settings?.icpNumber && (
           <p>
             <a
