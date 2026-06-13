@@ -26,6 +26,7 @@ export default function LoginPage() {
 
       if (!res.ok) {
         setError(data.error || '登录失败')
+        setLoading(false)
         return
       }
 
@@ -34,7 +35,6 @@ export default function LoginPage() {
       router.push('/admin')
     } catch {
       setError('网络错误')
-    } finally {
       setLoading(false)
     }
   }

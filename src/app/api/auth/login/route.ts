@@ -33,6 +33,13 @@ export async function POST(request: Request) {
       )
     }
 
+    if (!user.isAdmin) {
+      return NextResponse.json(
+        { error: '无管理员权限，无法登录后台' },
+        { status: 403 }
+      )
+    }
+
     const token = generateToken({
       userId: user.id,
       username: user.username,

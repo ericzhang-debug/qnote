@@ -31,7 +31,11 @@ export default function AdminDashboard() {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
-      setQnotes(data.qnotes)
+      if (!res.ok) {
+        setLoading(false)
+        return
+      }
+      setQnotes(data.qnotes || [])
     } catch (err) {
       console.error(err)
     } finally {
