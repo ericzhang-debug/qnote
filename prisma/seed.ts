@@ -1,12 +1,31 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaLibSql } from '@prisma/adapter-libsql'
 import bcrypt from 'bcryptjs'
 
-const adapter = new PrismaLibSql({
-  url: process.env.DATABASE_URL || 'file:./prisma/dev.db',
-})
+function createPrismaClient(): PrismaClient {
+  const url = process.env.DATABASE_URL || 'file:./prisma/dev.db'
 
-const prisma = new PrismaClient({ adapter })
+  if (url.startsWith('postgresql://') || url.startsWith('postgres://')) {
+    const { PrismaPg } = require('@prisma/adapter-pg')
+    const { Pool } = require('pg')
+    const pool = new Pool({ connectionString: url })
+    const adapter = new PrismaPg(pool)
+    return new PrismaClient({ adapter })
+  }
+
+  if (url.startsWith('mysql://') || url.startsWith('mariadb://')) {
+    const { PrismaMariaDb } = require('@prisma/adapter-mariadb')
+    const mariadb = require('mariadb')
+    const connection = mariadb.createConnection(url)
+    const adapter = new PrismaMariaDb(connection)
+    return new PrismaClient({ adapter })
+  }
+
+  const { PrismaLibSql } = require('@prisma/adapter-libsql')
+  const adapter = new PrismaLibSql({ url })
+  return new PrismaClient({ adapter })
+}
+
+const prisma = createPrismaClient()
 
 async function main() {
   const hashedPassword = await bcrypt.hash('admin123', 10)
