@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
-import { Heart } from 'lucide-react'
+import { Heart, Copy, Link as LinkIcon, Check } from 'lucide-react'
 
 interface Qnote {
   id: number
@@ -36,6 +36,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [settings, setSettings] = useState<SiteSettings | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchQnotes()
@@ -63,6 +64,12 @@ export default function Home() {
     } finally {
       setLoading(false)
     }
+  }
+
+  function copyShareLink(shareId: string) {
+    navigator.clipboard.writeText(`${window.location.origin}/share/${shareId}`)
+    setCopiedId(shareId)
+    setTimeout(() => setCopiedId(null), 2000)
   }
 
   function formatDate(dateStr: string) {
@@ -133,10 +140,32 @@ export default function Home() {
                       <p className="text-base leading-relaxed text-slate-700 dark:text-slate-200 whitespace-pre-wrap break-words">
                         {qnote.content}
                       </p>
-                      <div className="mt-3 text-xs text-slate-400 dark:text-slate-500">
+                      <div className="mt-3 flex items-center justify-between text-xs">
                         <span className="font-medium text-slate-400 dark:text-slate-500">
                           {qnote.user.displayName}
                         </span>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => copyShareLink(qnote.shareId)}
+                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                            title="复制分享链接"
+                          >
+                            {copiedId === qnote.shareId ? (
+                              <Check className="w-3.5 h-3.5 text-green-500" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                          <a
+                            href={`/share/${qnote.shareId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                            title="打开分享页"
+                          >
+                            <LinkIcon className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
                       </div>
                     </div>
                   </div>
