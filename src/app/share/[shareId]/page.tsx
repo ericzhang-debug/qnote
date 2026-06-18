@@ -1,6 +1,19 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 
+/** 从 shareId 生成唯一 HSL 色值 */
+function hashColor(shareId: string): { hue: number; sat: number; light: number } {
+  let hash = 0
+  for (let i = 0; i < shareId.length; i++) {
+    hash = ((hash << 5) - hash) + shareId.charCodeAt(i)
+    hash |= 0
+  }
+  const hue = Math.abs(hash) % 360
+  const sat = 55 + (Math.abs(hash >> 8) % 30) // 55-85
+  const light = 60 + (Math.abs(hash >> 16) % 20) // 60-80
+  return { hue, sat, light }
+}
+
 async function getSettings() {
   try {
     const settings = await prisma.setting.findUnique({ where: { id: 1 } })
@@ -63,6 +76,14 @@ export default async function SharePage({
     notFound()
   }
 
+  const { hue, sat, light } = hashColor(shareId)
+  const bgLight = `hsl(${hue}, ${sat}%, ${light}%)`
+  const bgMid = `hsl(${hue}, ${sat + 5}%, ${light - 10}%)`
+  const quoteColor = `hsl(${hue}, ${sat}%, ${light - 20}%)`
+  const borderColor = `hsl(${hue}, ${sat - 10}%, ${light - 5}%)`
+  const textColor = `hsl(${hue}, ${sat + 10}%, ${light - 40}%)`
+  const metaColor = `hsl(${hue}, ${sat}%, ${light - 35}%)`
+
   const formattedDate = new Intl.DateTimeFormat('zh-CN', {
     year: 'numeric',
     month: 'long',
@@ -74,38 +95,64 @@ export default async function SharePage({
   const settings = await getSettings()
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 p-4">
       <div className="w-full max-w-lg flex-1 flex items-center">
         {/* Card */}
-        <div className="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl border border-slate-200/60 dark:border-slate-700/30 shadow-xl p-8 md:p-10 relative overflow-hidden">
+        <div className="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 md:p-10 relative overflow-hidden"
+          style={{ borderColor }}>
           {/* Decorative elements */}
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-full blur-2xl" />
-          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-tr from-amber-100 to-rose-100 dark:from-amber-900/20 dark:to-rose-900/20 rounded-full blur-2xl" />
+          <div
+            className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-2xl opacity-40"
+            style={{
+              background: `linear-gradient(135deg, ${bgLight}, ${bgMid})`,
+            }}
+          />
+          <div
+            className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full blur-2xl opacity-40"
+            style={{
+              background: `linear-gradient(to top right, ${bgLight}, ${bgMid})`,
+            }}
+          />
 
           {/* Content */}
           <div className="relative">
             {/* Quote mark */}
-            <div className="text-5xl leading-none text-indigo-200 dark:text-indigo-700/50 mb-2">
+            <div
+              className="text-5xl leading-none mb-2 opacity-50"
+              style={{ color: quoteColor }}
+            >
               &ldquo;
             </div>
 
             {/* Content */}
-            <p className="text-lg md:text-xl leading-relaxed text-slate-700 dark:text-slate-200 whitespace-pre-wrap break-words font-serif tracking-wide">
+            <p
+              className="text-lg md:text-xl leading-relaxed whitespace-pre-wrap break-words font-serif tracking-wide"
+              style={{ color: textColor }}
+            >
               {qnote.content}
             </p>
 
             {/* Closing quote */}
-            <div className="text-5xl leading-none text-indigo-200 dark:text-indigo-700/50 text-right mt-2">
+            <div
+              className="text-5xl leading-none text-right mt-2 opacity-50"
+              style={{ color: quoteColor }}
+            >
               &rdquo;
             </div>
 
             {/* Divider */}
-            <div className="my-6 border-t border-slate-100 dark:border-slate-700/30" />
+            <div
+              className="my-6 border-t opacity-50"
+              style={{ borderColor }}
+            />
 
             {/* Footer info */}
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                <p
+                  className="text-sm font-medium"
+                  style={{ color: metaColor }}
+                >
                   {qnote.user.displayName}
                 </p>
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
