@@ -3,11 +3,7 @@ generator client {
 }
 
 datasource db {
-  // 切换数据库时修改 provider:
-  //   sqlite  → 默认
-  //   postgresql → PostgreSQL
-  //   mysql   → MySQL / MariaDB
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
