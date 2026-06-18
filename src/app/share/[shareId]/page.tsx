@@ -1,7 +1,5 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
-import { format } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
 
 async function getSettings() {
   try {
@@ -65,7 +63,14 @@ export default async function SharePage({
     notFound()
   }
 
-  const formattedDate = format(qnote.createdAt, 'yyyy年M月d日 HH:mm', { locale: zhCN })
+  const formattedDate = new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Shanghai',
+  }).format(qnote.createdAt)
   const settings = await getSettings()
 
   return (
@@ -117,7 +122,7 @@ export default async function SharePage({
 
       {/* Footer */}
       <footer className="text-center text-xs text-slate-400 dark:text-slate-600 mt-6 pb-4 space-y-1">
-        {/* <p>来自 {settings.siteName}</p> */}
+        <p>✦ 来自 {settings.siteName}</p>
         {settings.showIcp && settings.icpNumber && (
           <p>
             <a
