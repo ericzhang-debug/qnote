@@ -62,27 +62,31 @@ pnpm dev
 
 ### 切换其他数据库
 
-内置支持 SQLite、PostgreSQL 和 MySQL/MariaDB，切换只需改两个文件：
+内置支持 SQLite、PostgreSQL 和 MySQL/MariaDB，切换需修改两个文件并重新生成客户端。
+
+> ⚠️ `.env` 文件不纳入版本管理，新环境需复制 `.env.example` 为 `.env` 后配置。
 
 <details>
 <summary><b>切换到 PostgreSQL</b></summary>
 
-**1. 修改 `prisma/schema.prisma`**
+**1. 修改 `prisma/schema.prisma` — 改 provider**
 
 ```prisma
 datasource db {
-  provider = "postgresql"   // ← 改为 postgresql
+  provider = "postgresql"   // sqlite → postgresql
 }
 ```
 
-**2. 修改 `.env`**
+**2. 修改 `.env` — 改连接信息**
 
 ```env
 DATABASE_PROVIDER=postgresql
 DATABASE_URL="postgresql://user:password@localhost:5432/qnote"
 ```
 
-**3. 运行迁移**
+**3. 重新生成 Prisma Client + 迁移 + 初始化**
+
+> provider 变了，必须 `prisma generate` 重新生成客户端，否则会报 "adapter 与 provider 不兼容" 的错误。
 
 ```bash
 pnpm prisma generate
@@ -94,22 +98,22 @@ pnpm seed
 <details>
 <summary><b>切换到 MySQL / MariaDB</b></summary>
 
-**1. 修改 `prisma/schema.prisma`**
+**1. 修改 `prisma/schema.prisma` — 改 provider**
 
 ```prisma
 datasource db {
-  provider = "mysql"   // ← 改为 mysql
+  provider = "mysql"   // sqlite → mysql
 }
 ```
 
-**2. 修改 `.env`**
+**2. 修改 `.env` — 改连接信息**
 
 ```env
 DATABASE_PROVIDER=mysql
 DATABASE_URL="mysql://user:password@localhost:3306/qnote"
 ```
 
-**3. 运行迁移**
+**3. 重新生成 Prisma Client + 迁移 + 初始化**
 
 ```bash
 pnpm prisma generate
